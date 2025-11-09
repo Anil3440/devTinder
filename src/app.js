@@ -1,23 +1,26 @@
 const express = require('express');
-const {adminAuth,userAuth} = require("./middlewares/adminAuth.js");
+
 const app = express();
 
-//handling auth middleware for all requests GET,POST,DELETE,PATCH,PUT by using app.use();
-//actual use of middleware if writing single authentication code for all routes.
-// app.use("/admin",adminAuth);
-// app.use("/user",userAuth);
-app.use("/user/data",userAuth,(req,res)=>{//can directly pass middleware here if only 1 route is there or pass in every route handler.its checks auth first then goes to callBack func.
-    res.send("user data sent");
-});
-app.use("/user/profile",userAuth,(req,res)=>{
-    res.send("user profile shown");
+app.use("/getUserData",(req,res,next)=>{
+    try{
+        //get data from db and send it
+        throw new Error("random error");//throws random bs error which makes cluttered response
+    }
+    catch(err){
+        res.status(500).send("error occured,contact customer support team.");
+        res.send("user profile shown");
+    }
+    
 })
-app.use("/admin/getAllData",adminAuth,(req,res)=>{
-    res.send("sent all data");
-});
-app.use("/admin/deleteUserData",adminAuth,(req,res)=>{
-    res.send("user data deleted");
+app.use("/",(err,req,res,next)=>{//order matters while passing parameters (req,res)/(req,res,next)/
+// (err,req,res,next)
+    //can log the error for us to know.
+    if(err){
+        res.status(500).send("something went wrong");//using this error handler to give a simple error response to user for all errors.its called directly when error occurs or we can call using next(err) in any previous route handler/middleware.
+    }
 })
+
 app.listen(3440,()=>{
     console.log("server is currently listening on port 3440");
 });
