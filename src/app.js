@@ -1,26 +1,36 @@
 const express = require('express');
+const {connectDB} = require('./config/database');
+const {User} = require('./models/user');
 
 const app = express();
-
-app.use("/getUserData",(req,res,next)=>{
+app.post("/signup",async (req,res)=>{
+    //creating new instance of 'User' model
+    const user1 = new User({
+        firstName: "Anil",
+        lastName: "Choudhary",
+        emailId: "anil40@gmail.com",
+        password: "anil@123",
+        age: 21,
+        gender: "Male",
+    });
     try{
-        //get data from db and send it
-        throw new Error("random error");//throws random bs error which makes cluttered response
+        await user1.save();
+        res.send("User added successfully");
     }
     catch(err){
-        res.status(500).send("error occured,contact customer support team.");
-        res.send("user profile shown");
+        res.send("error saving the user"+err.message);
     }
     
 })
-app.use("/",(err,req,res,next)=>{//order matters while passing parameters (req,res)/(req,res,next)/
-// (err,req,res,next)
-    //can log the error for us to know.
-    if(err){
-        res.status(500).send("something went wrong");//using this error handler to give a simple error response to user for all errors.its called directly when error occurs or we can call using next(err) in any previous route handler/middleware.
-    }
-})
 
-app.listen(3440,()=>{
-    console.log("server is currently listening on port 3440");
-});
+connectDB()
+    .then(()=>{
+        console.log("connected to db successfully");
+        app.listen(3440,()=>{
+            console.log("server is currently listening on port 3440");
+        });
+    })
+    .catch((err)=>{
+        console.error("error connecting to db");
+    });
+
