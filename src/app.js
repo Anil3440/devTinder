@@ -16,7 +16,7 @@ app.post("/signup",async (req,res)=>{
         res.send("error saving the user"+err.message);
     }
     
-})
+});
 // fetch user info using email
 app.get("/user",async(req,res)=>{
     const userEmail = req.body.emailId;
@@ -46,7 +46,7 @@ app.get("/feed",async(req,res)=>{
     catch(err){
         res.send("something went wrong");
     }
-})
+});
 //findOne API - GET /find - get one object from DB.
 app.get("/find",async(req,res)=>{
     const userEmail = req.body.emailId;
@@ -66,7 +66,7 @@ app.get("/find",async(req,res)=>{
     catch(err){
         res.send("something went wrong");
     }
-})
+});
 //delete user from DB
 app.delete("/user",async(req,res)=>{
     const userId = req.body._id;
@@ -77,20 +77,23 @@ app.delete("/user",async(req,res)=>{
     catch(err){
         res.status(400).send("something went wrong");
     }
-})
+});
 //update data of the user
 app.patch("/user",async(req,res)=>{
     const userId = req.body._id;
     const data = req.body;
     try{
-        const user = await User.findByIdAndUpdate(userId,data,{returnDocument: "after"});
+        const user = await User.findByIdAndUpdate(userId,data,{
+            returnDocument: "after",
+            runValidators: true,
+        });
         console.log(user);
         res.send("user data updated successfully");
     }
     catch(err){
-        res.send("something went wrong");
+        res.send("Update Failed: "+err.message);
     }
-})
+});
 
 connectDB()
     .then(()=>{

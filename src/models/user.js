@@ -1,23 +1,86 @@
 const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
     firstName: {
-        type: String
+        type: String,
+        required: [true,"firstName is required"],
+        minLength: 2,
+        maxLength: 50,
+        trim: true,
     },
     lastName: {
-        type: String
+        type: String,
+        trim: true,
     },
     password: {
-        type: String
+        type: String,
+        required: true,
+        minLength: [8,"password must have atleast 8 characters."],
+        select: false,// <-- ADDED: Hides password from queries by default like User.findOne().
     },
     age: {
-        type: Number
+        type: Number,
+        min: [18,"you must be above 18 to signup"],
+        max: [120,"enter a valid age"],
+        validate: { // <-- ADDED: Ensures age is an integer(Validator object)
+            validator: Number.isInteger,//validator using built in function isInteger
+            message: "{VALUE} is not an integer"//err message
+        }
     },
     emailId: {
-        type: String
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        trim: true,
+        match: [/^\S+@\S+\.\S+$/,"enter a valid email"],
     },
     gender: {
-        type: String
-    }
+        type: String,
+        validate(value){
+            if(!["male","female","others"].includes(value)){//direct validate function
+                throw new Error("invalid gender entered");
+            }
+        },
+        lowercase: true,
+        trim: true,
+    },
+    photoUrl: {
+        type: String,
+        trim: true,
+        default: 'https://i.stack.imgur.com/34AD2.jpg',
+
+    },
+    about: {
+        type: String,
+        trim: true,
+        default: "default about(description) of the user"
+    },
+    skills: {
+        type: [String],
+        // validate: { // This is the validator object
+        // validator: function(arr) { // 1. The validator (as an inline function)
+        //     return arr.every(skill => typeof skill === 'string' && skill.trim().length > 0);
+        // },
+        // message: 'Skills array must contain non-empty strings.' // 2. The message
+        // }
+    },
+    role: {
+        type: String,
+        enum: {
+            values: ["user","admin","moderator"],
+            message: "{VALUE} is not valid(user, admin, or moderator)",
+        },
+        
+        default: 'user',
+    },
+    // createdAt: {
+    //     type: Date,
+    //     default: Date.now,
+    //     immutable: true,
+    // },
+},
+{
+    timestamps: true,
 });
 const User = mongoose.model("User",userSchema);
 module.exports = {User}
