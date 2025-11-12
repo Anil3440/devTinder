@@ -1,19 +1,41 @@
 const express = require('express');
 const {connectDB} = require('./config/database');
 const {User} = require('./models/user');
+const sanitizeHtml = require('sanitize-html');
 
 const app = express();
 app.use(express.json());//using an express inbuilt middleware to convert JSON to js object to see on    console
 
 app.post("/signup",async (req,res)=>{
     //creating new instance of 'User' model
-    const user1 = new User(req.body);
+    const cleanFirstName = sanitizeHtml(req.body.firstName,{allowedTags: []});
+    const cleanLastName = sanitizeHtml(req.body.lastName,{allowedTags: []});
+    const cleanAbout = sanitizeHtml(req.body.about,{allowedTags: []}); 
     try{
-        await user1.save();
+        const user = new User({
+            firstName: cleanFirstName,
+            lastName: cleanLastName,
+            emailId: req.body.emailId,
+            age: req.body.age,
+            gender: req.body.gender,
+            skills: req.body.skills,
+            password: req.body.password,
+            about: cleanAbout,
+            photoUrl: req.body.photoUrl,
+        });
+        await user.save();
         res.send("User added successfully");
     }
     catch(err){
-        res.send("error saving the user"+err.message);
+        if(err.code===11000){
+            if(err.keyPattern&&err.keyPattern.emailId){
+                return res.status(409).send("This email address is already registered.");
+            }
+        }
+        if(err.name === 'ValidationError'){
+            return res.status(400).send("Validation Error: "+ err.message);
+        }
+        res.status(500).send("error saving the user"+err.message);
     }
     
 });
@@ -79,10 +101,18 @@ app.delete("/user",async(req,res)=>{
     }
 });
 //update data of the user
-app.patch("/user",async(req,res)=>{
-    const userId = req.body._id;
+app.patch("/user/:userId",async(req,res)=>{
+    const userId = req.params?.userId;
     const data = req.body;
     try{
+        const ALLOWED_UPDATES = ['password','gender','photoUrl','about','skills'];
+        const isAllowed = Object.keys(data).every((k)=>ALLOWED_UPDATES.includes(k));
+        if(!isAllowed){
+            throw new Error("update not allowed");
+        }
+        if(data?.skills.length>10){
+            throw new Error("can't add more than 10 skills");
+        }
         const user = await User.findByIdAndUpdate(userId,data,{
             returnDocument: "after",
             runValidators: true,
