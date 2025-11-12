@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
+
 const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
@@ -16,6 +18,11 @@ const userSchema = new mongoose.Schema({
         required: true,
         minLength: [8,"password must have atleast 8 characters."],
         select: false,// <-- ADDED: Hides password from queries by default like User.findOne().
+        validate(value){
+            if(!validator.isStrongPassword(value)){
+                throw new Error("enter a strong password: ");
+            }
+        }
     },
     age: {
         type: Number,
@@ -32,7 +39,12 @@ const userSchema = new mongoose.Schema({
         unique: true,
         lowercase: true,
         trim: true,
-        match: [/^\S+@\S+\.\S+$/,"enter a valid email"],
+        // match: [/^\S+@\S+\.\S+$/,"enter a valid email"],
+        validate(value){
+            if(!validator.isEmail(value)){
+                throw new Error("Invalid email address: "+value);
+            }
+        }
     },
     gender: {
         type: String,
@@ -48,7 +60,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         trim: true,
         default: 'https://i.stack.imgur.com/34AD2.jpg',
-
+        validate(value){
+            if(!validator.isURL(value)){
+                throw new Error("invalid photo url: "+value);
+            }
+        }
     },
     about: {
         type: String,
