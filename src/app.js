@@ -3,10 +3,11 @@ const {connectDB} = require('./config/database');
 const {User} = require('./models/user');
 const {validateSignup} = require('./utils/helper');
 const bcrypt = require('bcrypt');
+const validator = require('validator');
 
 const app = express();
 app.use(express.json());//using an express inbuilt middleware to convert JSON to js object to see on    console
-
+//signup API
 app.post("/signup",async (req,res)=>{
      
     try{
@@ -30,6 +31,32 @@ app.post("/signup",async (req,res)=>{
         res.status(500).send("ERROR: "+err.message);
     }
     
+});
+//login API
+app.post("/login",async(req,res)=>{
+    try{
+        req.body.emailId = validator.normalizeEmail(req.body.emailId);
+        const{emailId,password} = req.body;
+        //validate email id
+        if(!validator.isEmail(emailId)){
+            throw new Error("enter a valid email id");
+        }
+        
+         //check for the email in DB
+        const user = await User.findOne({emailId:emailId}).select('+password');
+        if(!user){
+            throw new Error("Invalid credentials.");
+        }
+        //compare the password
+        const isPasswordValid = await bcrypt.compare(password,user.password);
+        if(isPasswordValid){
+            res.send("login successfull!!");
+        }else{
+            throw new Error("Invalid credentials.");
+        }
+    }catch(err){
+        res.status(400).send("ERROR: "+err.message);
+    }
 });
 // fetch user info using email
 app.get("/user",async(req,res)=>{
