@@ -1,28 +1,20 @@
 const express = require('express');
 const {connectDB} = require('./config/database');
 const {User} = require('./models/user');
-const sanitizeHtml = require('sanitize-html');
+const {validateSignup} = require('./utils/helper');
+const bcrypt = require('bcrypt');
 
 const app = express();
 app.use(express.json());//using an express inbuilt middleware to convert JSON to js object to see on    console
 
 app.post("/signup",async (req,res)=>{
-    //creating new instance of 'User' model
-    const cleanFirstName = sanitizeHtml(req.body.firstName,{allowedTags: []});
-    const cleanLastName = sanitizeHtml(req.body.lastName,{allowedTags: []});
-    const cleanAbout = sanitizeHtml(req.body.about,{allowedTags: []}); 
+     
     try{
-        const user = new User({
-            firstName: cleanFirstName,
-            lastName: cleanLastName,
-            emailId: req.body.emailId,
-            age: req.body.age,
-            gender: req.body.gender,
-            skills: req.body.skills,
-            password: req.body.password,
-            about: cleanAbout,
-            photoUrl: req.body.photoUrl,
-        });
+        //validating req.body using helper method.
+        validateSignup(req);
+
+        //creating new instance of 'User' model
+        const user = new User(req.body);
         await user.save();
         res.send("User added successfully");
     }
@@ -35,7 +27,7 @@ app.post("/signup",async (req,res)=>{
         if(err.name === 'ValidationError'){
             return res.status(400).send("Validation Error: "+ err.message);
         }
-        res.status(500).send("error saving the user"+err.message);
+        res.status(500).send("ERROR: "+err.message);
     }
     
 });
