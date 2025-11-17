@@ -4,9 +4,15 @@ const {User} = require('./models/user');
 const {validateSignup} = require('./utils/helper');
 const bcrypt = require('bcrypt');
 const validator = require('validator');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
+const {userAuth} = require('./middlewares/auth');
 
 const app = express();
-app.use(express.json());//using an express inbuilt middleware to convert JSON to js object to see on    console
+
+app.use(express.json());//using an express inbuilt middleware to convert JSON to js object to see on console
+app.use(cookieParser());//using cookieParser middleware to pase a cookie send back to server from user to authenticate a valid user
+
 //signup API
 app.post("/signup",async (req,res)=>{
      
@@ -50,6 +56,10 @@ app.post("/login",async(req,res)=>{
         //compare the password
         const isPasswordValid = await bcrypt.compare(password,user.password);
         if(isPasswordValid){
+            //create a token
+            const token = await jwt.sign({_id: user._id},"secretKey@40",{expiresIn: "1h"});
+            //send cookie
+            res.cookie("token",token,{expires: new Date(Date.now() + 1 * 3600000)});
             res.send("login successfull!!");
         }else{
             throw new Error("Invalid credentials.");
@@ -58,6 +68,21 @@ app.post("/login",async(req,res)=>{
         res.status(400).send("ERROR: "+err.message);
     }
 });
+//display profile
+app.get("/profile", userAuth,async(req,res)=>{
+    try{
+        const user = req.user;
+        res.send(user);
+    }
+    catch(err){
+        res.status(400).send("something went wrong"+err.message);
+    }
+});
+//send connection request
+app.post("/sendConnectionRequest", userAuth,async (req,res)=>{
+    console.log("Sending connection req.");
+    res.send("connection req sent");
+})
 // fetch user info using email
 app.get("/user",async(req,res)=>{
     const userEmail = req.body.emailId;
