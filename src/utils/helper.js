@@ -1,5 +1,6 @@
 const sanitizeHtml = require('sanitize-html');
 const validator = require('validator');
+const {User} = require('../models/user');
 
 //simple function to clean strings of XSS
 const clean = (dirtyString)=>{
@@ -37,6 +38,27 @@ const validateSignup = (req)=>{
     }
 };
 
+const validateEditProfileData = (req)=>{
+
+    const data = req.body;
+
+    const allowedUpdates = ['gender','photoUrl','about','skills'];
+    if(data?.skills?.length>10){
+        throw new Error("cannot save more than 10 skills.")
+    }
+    const isUpdateAllowed = Object.keys(data).every(k=>allowedUpdates.includes(k));
+    return isUpdateAllowed;
+
+};
+
+const validateEditPasswordData = (req)=>{
+    const allowedUpdates = ['password'];
+    const isUpdateAllowed = Object.keys(req.body).every(k=>allowedUpdates.includes(k));
+    return isUpdateAllowed;
+}
+
 module.exports = {
     validateSignup,
+    validateEditProfileData,
+    validateEditPasswordData
 };
