@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
+            
 const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema({
     emailId: {
         type: String,
         required: true,
-        unique: true,
+        unique: true,//makes it unique by creating a unique index of this field.makes searching way faster
         lowercase: true,
         trim: true,
         // match: [/^\S+@\S+\.\S+$/,"enter a valid email"],
@@ -100,6 +100,9 @@ const userSchema = new mongoose.Schema({
 {
     timestamps: true,
 });
+
+userSchema.index({firstName: 1, lastName: 1});
+
 userSchema.pre('save',async function(next){
     const user = this;
 
