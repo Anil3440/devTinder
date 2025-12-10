@@ -35,6 +35,7 @@ authRouter.post("/signup",async (req,res)=>{
 //login API
 authRouter.post("/login",async(req,res)=>{
     try{
+        
         req.body.emailId = validator.normalizeEmail(req.body.emailId);
         const{emailId,password} = req.body;
         //validate email id

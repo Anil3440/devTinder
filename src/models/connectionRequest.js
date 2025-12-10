@@ -5,20 +5,22 @@ const connectionRequestSchema = mongoose.Schema(
         fromUserId: {
             type: mongoose.Schema.Types.ObjectId,
             required: true,
+            ref: "User",
         },
-        fromUserName: {
-            type: String,
-            required: true,
-        },
+        // fromUserName: {
+        //     type: String,
+        //     required: true,
+        // },
         
         toUserId: {
             type: mongoose.Schema.Types.ObjectId,
             required: true,
+            ref: "User",
         },
-        toUserName: {
-            type: String,
-            required: true,
-        },
+        // toUserName: {
+        //     type: String,
+        //     required: true,
+        // },
 
         status: {
             type: String,
@@ -34,7 +36,7 @@ const connectionRequestSchema = mongoose.Schema(
     }
 );
 
-connectionRequestSchema.index({fromUserId : 1, toUserId : 1})
+connectionRequestSchema.index({fromUserId : 1, toUserId : 1});
 
 connectionRequestSchema.pre("save",function(next){
     const connectionRequest = this;
