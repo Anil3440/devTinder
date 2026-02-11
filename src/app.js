@@ -2,9 +2,14 @@ const express = require('express');
 const {connectDB} = require('./config/database');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
+const cors = require('cors');
 
 const app = express();
 
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}));//using cors middleware for handling cors error i get while sending api req from frontend to backend api.
 app.use(express.json());//using an express inbuilt middleware to convert JSON to js object to see on console
 app.use(cookieParser());//using cookieParser middleware to pase a cookie send back to server from user to authenticate a valid user
 
